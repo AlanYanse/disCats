@@ -5,7 +5,7 @@ from Cat import Cat  # si guardás la clase en un archivo llamado cat.py
 
 
 pygame.init()
-ANCHO, ALTO = 800, 600
+ANCHO, ALTO = 800, 500
 pantalla = pygame.display.set_mode((ANCHO, ALTO))
 pygame.display.set_caption("disCats")
 
