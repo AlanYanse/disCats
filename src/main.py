@@ -1,9 +1,19 @@
 
 import pygame
 import sys
-from Cat import Cat  # si guardás la clase en un archivo llamado cat.py
 
 
+from Game import *
+from Cat import *  # si guardás la clase en un archivo llamado cat.py
+
+
+if __name__ == '__main__':
+
+    game = Game()
+    game.bucle_principal()
+
+
+"""
 pygame.init()
 ANCHO, ALTO = 800, 500
 pantalla = pygame.display.set_mode((ANCHO, ALTO))
@@ -28,3 +38,4 @@ while True:
 
     pygame.display.flip()
     clock.tick(60)
+"""
