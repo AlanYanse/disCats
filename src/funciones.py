@@ -11,6 +11,10 @@ def get_diccionario_tiles(game):
             21: game.obtener_grafico("agua2.png"),
             22: game.obtener_grafico("agua3.png"),
             23: game.obtener_grafico("agua4.png"),
+            30: game.obtener_grafico("nube1.png"),
+            31: game.obtener_grafico("nube2.png"),
+            32: game.obtener_grafico("nube3.png"),
+            33: game.obtener_grafico("nube4.png"),
         }
     
     return dict_tiles
