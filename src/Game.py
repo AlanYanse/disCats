@@ -4,6 +4,7 @@ import sys
 
 from config import *
 from niveles import *
+from funciones import *
 
 class Game:
 
@@ -14,15 +15,7 @@ class Game:
         self.screen = pygame.display.set_mode((ANCHO, ALTO))
         self.reloj = pygame.time.Clock()
 
-        self.num_tile = {
-
-            1: None,
-            10: self.obtener_grafico("piso1.png"),
-            20: self.obtener_grafico("agua1.png"),
-            21: self.obtener_grafico("agua2.png"),
-            22: self.obtener_grafico("agua3.png"),
-            23: self.obtener_grafico("agua4.png"),
-        }
+        self.num_tile = get_diccionario_tiles(self)
 
         self.scroll_x = 0
 
@@ -30,35 +23,24 @@ class Game:
 
 
     def update(self):
+
+        tecla_presionada = pygame.key.get_pressed()
+        limite_provisorio = 380
+
+        if tecla_presionada[pygame.K_RIGHT] and self.scroll_x < limite_provisorio:
+            self.scroll_x += 5
+            print(self.scroll_x)
+        elif tecla_presionada[pygame.K_LEFT] and self.scroll_x > 0:
+            self.scroll_x -= 5
+
         pygame.display.flip()
         self.reloj.tick(60) # Para que se refresque a 60 FPS
 
 
     def draw(self):
-        # Dibujando el escenario
-        filas = 8
-        columnas = 12
 
-        for y in range(filas):
-            for x in range(columnas):
-                index = y * columnas + x
-                tile = nivel_1_1[index]
-                """
-                if (tile == 10):
-                    self.screen.blit(self.num_tile[tile][0], (x * 64, y * 64))
-                """
-                # Estrucura switch
-                match tile:
-                    case 10:
-                        self.screen.blit(self.num_tile[tile][0], (x * 64, y * 64))
-                    case 20:
-                        self.screen.blit(self.num_tile[tile][0], (x * 64, y * 64))
-                    case 21:
-                        self.screen.blit(self.num_tile[tile][0], (x * 64, y * 64))
-                    case 22:
-                        self.screen.blit(self.num_tile[tile][0], (x * 64, y * 64))
-                    case 23:
-                        self.screen.blit(self.num_tile[tile][0], (x * 64, y * 64))
+        self.screen.fill(BLANCO)
+        draw_tilemap_buena(self)
 
 
 
