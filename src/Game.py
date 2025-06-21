@@ -15,16 +15,20 @@ class Game:
         self.reloj = pygame.time.Clock()
 
         self.num_tile = {
-            
+
             1: None,
-            10: self.obtener_grafico("piso1.png")
+            10: self.obtener_grafico("piso1.png"),
+            20: self.obtener_grafico("agua1.png"),
+            21: self.obtener_grafico("agua2.png"),
+            22: self.obtener_grafico("agua3.png"),
+            23: self.obtener_grafico("agua4.png"),
         }
 
         self.scroll_x = 0
 
 
 
-    
+
     def update(self):
         pygame.display.flip()
         self.reloj.tick(60) # Para que se refresque a 60 FPS
@@ -39,9 +43,23 @@ class Game:
             for x in range(columnas):
                 index = y * columnas + x
                 tile = nivel_1_1[index]
-
+                """
                 if (tile == 10):
                     self.screen.blit(self.num_tile[tile][0], (x * 64, y * 64))
+                """
+                # Estrucura switch
+                match tile:
+                    case 10:
+                        self.screen.blit(self.num_tile[tile][0], (x * 64, y * 64))
+                    case 20:
+                        self.screen.blit(self.num_tile[tile][0], (x * 64, y * 64))
+                    case 21:
+                        self.screen.blit(self.num_tile[tile][0], (x * 64, y * 64))
+                    case 22:
+                        self.screen.blit(self.num_tile[tile][0], (x * 64, y * 64))
+                    case 23:
+                        self.screen.blit(self.num_tile[tile][0], (x * 64, y * 64))
+
 
 
     def check_event(self):
