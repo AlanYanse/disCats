@@ -3,3 +3,8 @@
 
 ANCHO, ALTO = 768, 512 # 12 tiles de ancho y 8 de alto
 BLANCO = (255, 255, 255)
+
+# FILAS Y COLUMNAS DEL NIVEL
+
+FILAS = 8
+COLUMNAS = 18
