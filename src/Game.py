@@ -23,12 +23,14 @@ class Game:
 
 
     def update(self):
-        
+
         tecla_presionada = pygame.key.get_pressed()
-        
-        if tecla_presionada[pygame.K_RIGHT]:
+        limite_provisorio = 380
+
+        if tecla_presionada[pygame.K_RIGHT] and self.scroll_x < limite_provisorio:
             self.scroll_x += 5
-        elif tecla_presionada[pygame.K_LEFT]:
+            print(self.scroll_x)
+        elif tecla_presionada[pygame.K_LEFT] and self.scroll_x > 0:
             self.scroll_x -= 5
 
         pygame.display.flip()
@@ -36,7 +38,7 @@ class Game:
 
 
     def draw(self):
-        
+
         self.screen.fill(BLANCO)
         draw_tilemap_buena(self)
 
