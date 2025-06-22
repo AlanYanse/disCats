@@ -10,7 +10,22 @@ class Game:
 
     def __init__(self):
 
+        pygame.init()
+
         self.program_runnig = True
+
+        self.puntos = 0
+        self.vidas = 7
+        self.nivel = 1
+
+        self.estados_juego = {
+
+            "menu_presentacion": True,
+            "en_juego": False,
+            "game_over": False,
+            "nivel_superado": False
+
+        }
 
         self.screen = pygame.display.set_mode((ANCHO, ALTO))
         self.reloj = pygame.time.Clock()
@@ -24,14 +39,14 @@ class Game:
 
     def update(self):
 
-        tecla_presionada = pygame.key.get_pressed()
+        """ tecla_presionada = pygame.key.get_pressed()
         limite_provisorio = 380
 
         if tecla_presionada[pygame.K_RIGHT] and self.scroll_x < limite_provisorio:
             self.scroll_x += 5
             print(self.scroll_x)
         elif tecla_presionada[pygame.K_LEFT] and self.scroll_x > 0:
-            self.scroll_x -= 5
+            self.scroll_x -= 5 """
 
         pygame.display.flip()
         self.reloj.tick(60) # Para que se refresque a 60 FPS
