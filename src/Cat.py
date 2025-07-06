@@ -29,11 +29,13 @@ class Cat(pygame.sprite.Sprite):
         dx = dy = 0
         nueva_direccion = self.direccion
 
-        if teclas[pygame.K_LEFT]:
+        if teclas[pygame.K_LEFT] and self.game.scroll_x > 0:
             dx = -self.velocidad
+            self.game.scroll_x -= 2
             nueva_direccion = 'izquierda'
-        elif teclas[pygame.K_RIGHT]:
+        elif teclas[pygame.K_RIGHT] and self.game.scroll_x < 420:
             dx = self.velocidad
+            self.game.scroll_x += 2
             nueva_direccion = 'derecha'
         elif teclas[pygame.K_UP]:
             dy = -self.velocidad
