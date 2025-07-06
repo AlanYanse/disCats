@@ -6,6 +6,8 @@ from config import *
 from niveles import *
 from funciones import *
 
+from Cat import *
+
 class Game:
 
     def __init__(self):
@@ -58,7 +60,9 @@ class Game:
             print(self.scroll_x)
         elif tecla_presionada[pygame.K_LEFT] and self.scroll_x > 0:
             self.scroll_x -= 5 """
-
+        teclas = pygame.key.get_pressed()
+        self.listas_sprites["all_sprites"].update(teclas)
+        #self.listas_sprites["catsito"].update()
         pygame.display.flip()
         self.reloj.tick(60) # Para que se refresque a 60 FPS
 
@@ -67,6 +71,9 @@ class Game:
 
         self.screen.fill(BLANCO)
         draw_tilemap_buena(self)
+
+        self.listas_sprites["all_sprites"].draw(self.screen)
+        #self.listas_sprites["catsito"].draw(self.screen)
 
         if self.estado_juego["menu_presentacion"]:
             self.screen.blit(self.txt_enter, (50,100))
@@ -144,9 +151,7 @@ class Game:
     def instanciar_objetos(self):
         if self.vidas <= 0:
             self.ir_gameover()
-            pass
-        """
-        catsito = Cat()
+            #pass
+        catsito = Cat(self, 10, 385)
         self.listas_sprites["all_sprites"].add(catsito)
         self.listas_sprites["catsito"].add(catsito)
-        """
