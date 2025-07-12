@@ -47,8 +47,12 @@ class Cat(pygame.sprite.Sprite):
         # Si no hay movimiento, resetear animación a primer frame
         if dx == 0 and dy == 0:
             self.indice_animacion = 0
-            self.image = self.animaciones[self.direccion][self.indice_animacion]
+            frame = self.animaciones[self.direccion][self.indice_animacion]
+            if self.direccion == 'izquierda':
+                frame = pygame.transform.flip(frame, True, False)
+            self.image = frame
             return
+
 
         # Actualiza la dirección si hay movimiento
         if nueva_direccion != self.direccion:
@@ -60,7 +64,16 @@ class Cat(pygame.sprite.Sprite):
         if self.contador_animacion >= 5:  # Velocidad de animación
             self.contador_animacion = 0
             self.indice_animacion = (self.indice_animacion + 1) % len(self.animaciones[self.direccion])
-            self.image = self.animaciones[self.direccion][self.indice_animacion]
+
+            frame = self.animaciones[self.direccion][self.indice_animacion]
+
+            # Volteo horizontal para movimiento a la izquierda
+            if self.direccion == 'izquierda':
+                frame = pygame.transform.flip(frame, True, False)
+
+
+            self.image = frame
+
 
         # Mover el sprite
         self.rect.x += dx
