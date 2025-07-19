@@ -5,6 +5,7 @@ class Cat(pygame.sprite.Sprite):
         super().__init__()
         self.game = game
         self.direccion = 'abajo'
+        self.direccion_prev = None
         self.indice_animacion = 0
         self.spritesheet = pygame.image.load("assets/sprite_sheet_bk.png").convert_alpha()
 
@@ -55,8 +56,17 @@ class Cat(pygame.sprite.Sprite):
         if teclas[pygame.K_SPACE] and self.en_suelo:
             self.velocidad_y = self.velocidad_salto
             self.en_suelo = False
-            nueva_direccion = 'salto'
-            self.indice_animacion = 0  # Reiniciar animación de salto
+            self.direccion_prev = self.direccion      # guarda hacia dónde mirabas
+            self.direccion = 'salto'                  # cámbiala YA
+            self.indice_animacion = 0
+            # primer frame de salto
+            frame = self.animaciones['salto'][0]
+            if self.direccion_prev == 'izquierda':
+                frame = pygame.transform.flip(frame, True, False)
+                print("por aquí pasó")
+            self.image = frame
+            return
+
 
         # Aplicar gravedad
         self.velocidad_y += self.gravedad
@@ -99,16 +109,28 @@ class Cat(pygame.sprite.Sprite):
             frame = self.animaciones[self.direccion][self.indice_animacion]
 
             # Volteo horizontal para movimiento a la izquierda
-            if self.direccion in ['izquierda', 'salto'] and dx < 0:
+            if self.direccion in ['izquierda', 'salto'] and dx:
                 frame = pygame.transform.flip(frame, True, False)
+                print("por aquí también pasó")
             elif self.direccion == 'salto' and self.direccion_prev in ['derecha', 'abajo']:
                 frame = pygame.transform.flip(frame, False, False)
-
+                print("aquí si llegó")
+            elif self.direccion == 'salto' and self.direccion_prev in ['izquierda', 'abajo']:
+                frame = pygame.transform.flip(frame, True, False)
+                self.direccion_prev = "izquierda"
+                print(self.direccion)
+                print(self.direccion_prev)
+            #self.direccion = "izquierda"
             self.image = frame
 
         # Guardar dirección previa para salto
-        if self.en_suelo and self.direccion != 'salto':
-            self.direccion_prev = self.direccion
+        if self.en_suelo and self.direccion == 'abajo': # si la direccion del cat es "abajo" significa que saltó previamente
+            #self.direccion_prev = "izquierda"
+            #self.direccion = self.direccion_prev
+            #print(f"ahora esta quieto en posicion {self.direccion_prev}")
+            if self.direccion_prev != None: # si la direccion_prev es distinta a None significa que se guardó una dirección previa al salto
+                self.direccion = self.direccion_prev
+            print(f"ahora esta quieto en posicion {self.direccion}")
 
         # Mover el sprite
         self.rect.x += dx
