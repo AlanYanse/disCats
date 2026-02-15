@@ -1,5 +1,7 @@
 
-nivel_1_1 = [
+
+
+bloque_1_nivel_1 = [
 
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,30,31,32,33,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -11,3 +13,32 @@ nivel_1_1 = [
     10,10,10,10,10,10,10,20,21,22,23,10,10,10,10,10,10,10,
 
 ]
+
+bloque_2_nivel_1 = [
+
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+
+]
+
+
+# Construcción final del nivel
+#nivel_1_1 = bloque_1_nivel_1 + bloque_2_nivel_1
+#nivel_1_1 = bloque_1_nivel_1
+
+# Ancho de cada bloque (número de columnas)
+cols = 18
+
+# Dividir cada bloque en filas (lista de listas)
+filas1 = [bloque_1_nivel_1[i:i+cols] for i in range(0, len(bloque_1_nivel_1), cols)]
+filas2 = [bloque_2_nivel_1[i:i+cols] for i in range(0, len(bloque_2_nivel_1), cols)]
+
+nivel_1_1 = []
+for f1, f2 in zip(filas1, filas2):
+    nivel_1_1.extend(f1 + f2)

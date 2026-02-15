@@ -61,6 +61,7 @@ class Game:
 
             self.scroll_x = self.gato.rect.centerx - ANCHO // 2
 
+            #max_scroll = COLUMNAS * 64 - ANCHO
             max_scroll = COLUMNAS * 64 - ANCHO
 
             if self.scroll_x < 0:
