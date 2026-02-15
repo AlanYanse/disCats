@@ -9,6 +9,7 @@ class Cat(pygame.sprite.Sprite):
         self.direccion_prev = None
         self.indice_animacion = 0
         self.spritesheet = pygame.image.load("assets/sprite_sheet_bk.png").convert_alpha()
+        
 
         # Animaciones por dirección (fila en el sprite sheet)
         self.animaciones = {
@@ -24,9 +25,9 @@ class Cat(pygame.sprite.Sprite):
         self.rect.topleft = (x, y)
 
         # Variables de movimiento
-        self.velocidad = 3
-        self.velocidad_salto = -12  # Velocidad inicial del salto (negativo porque en pygame y aumenta hacia abajo)
-        self.gravedad = 0.6
+        self.velocidad = VELOCIDAD_GATO
+        self.velocidad_salto = VELOCIDAD_SALTO
+        self.gravedad = GRAVEDAD
         self.velocidad_y = 0
         self.en_suelo = True
         self.contador_animacion = 0
