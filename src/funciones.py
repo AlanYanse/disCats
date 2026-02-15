@@ -46,7 +46,7 @@ def draw_tilemap_sin_scroll(game):
                     game.screen.blit(game.num_tile[tile][0], (x * 64, y * 64))
 
 
-
+"""
 def draw_tilemap_buena(game):
 
     tiles_en_pantalla_x = game.screen.get_width() // 64
@@ -66,5 +66,5 @@ def draw_tilemap_buena(game):
                 pantalla_x = x * 64 - (game.scroll_x % 64)
                 pantalla_y = y * 64
                 game.screen.blit(game.num_tile[tile][0], (pantalla_x , pantalla_y))
-
+"""
             

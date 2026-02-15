@@ -1,4 +1,5 @@
 import pygame
+from config import *
 
 class Cat(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -32,110 +33,85 @@ class Cat(pygame.sprite.Sprite):
         self.contador_salto = 0
 
     def update(self, teclas):
-        dx = dy = 0
+        dx = 0
+        dy = 0
         nueva_direccion = self.direccion
 
-        # Solo permitir movimiento horizontal si está en el suelo
+        # --- 1. ENTRADA DE TECLADO ---
         if self.en_suelo:
-            if teclas[pygame.K_LEFT] and self.game.scroll_x > 0:
+            if teclas[pygame.K_LEFT]:
                 dx = -self.velocidad
-                self.game.scroll_x -= 2
                 nueva_direccion = 'izquierda'
-            elif teclas[pygame.K_RIGHT] and self.game.scroll_x < 420:
+            elif teclas[pygame.K_RIGHT]:
                 dx = self.velocidad
-                self.game.scroll_x += 2
                 nueva_direccion = 'derecha'
-            elif teclas[pygame.K_UP]:
-                dy = -self.velocidad
-                nueva_direccion = 'arriba'
-            elif teclas[pygame.K_DOWN]:
-                dy = self.velocidad
-                nueva_direccion = 'abajo'
 
-        # Salto (solo si está en el suelo)
+        # Salto
         if teclas[pygame.K_SPACE] and self.en_suelo:
-            self.velocidad_y = self.velocidad_salto
+            self.velocidad_y = self.velocidad_salto # -12
             self.en_suelo = False
-            self.direccion_prev = self.direccion      # guarda hacia dónde mirabas
-            self.direccion = 'salto'                  # cámbiala YA
+            self.direccion_prev = self.direccion
+            self.direccion = 'salto'
             self.indice_animacion = 0
-            # primer frame de salto
-            frame = self.animaciones['salto'][0]
-            if self.direccion_prev == 'izquierda':
-                frame = pygame.transform.flip(frame, True, False)
-                print("por aquí pasó")
-            self.image = frame
-            return
 
-
-        # Aplicar gravedad
+        # --- 2. APLICAR GRAVEDAD ---
         self.velocidad_y += self.gravedad
-        dy += self.velocidad_y
+        dy = self.velocidad_y
 
-        # Verificar colisión con el suelo (aquí asumimos que el suelo está en y=400)
-        if self.rect.bottom + dy > 400:  # Ajusta este valor según tu juego
-            dy = 400 - self.rect.bottom
-            self.velocidad_y = 0
-            self.en_suelo = True
-            if self.direccion == 'salto':
-                nueva_direccion = 'abajo'  # Volver a animación normal al tocar el suelo
+        # --- 3. COLISIÓN HORIZONTAL (EJE X) ---
+        self.rect.x += dx
+        # Limitar al borde izquierdo del mundo
+        if self.rect.left < 0:
+            self.rect.left = 0
+
+        # Limitar al borde derecho del mundo
+        ancho_mundo = COLUMNAS * 64
+        if self.rect.right > ancho_mundo:
+            self.rect.right = ancho_mundo
+        lista_colisiones_x = pygame.sprite.spritecollide(self, self.game.listas_sprites["escenario"], False)
+        for bloque in lista_colisiones_x:
+            if dx > 0: # Choca moviéndose a la derecha
+                self.rect.right = bloque.rect.left
+            elif dx < 0: # Choca moviéndose a la izquierda
+                self.rect.left = bloque.rect.right
+
+        # --- 4. COLISIÓN VERTICAL (EJE Y) ---
+        self.rect.y += dy
+        self.en_suelo = False # Por defecto está en el aire
+        
+        lista_colisiones_y = pygame.sprite.spritecollide(self, self.game.listas_sprites["escenario"], False)
+        for bloque in lista_colisiones_y:
+            if self.velocidad_y > 0: # Está cayendo
+                self.rect.bottom = bloque.rect.top
+                self.velocidad_y = 0
+                self.en_suelo = True
+                if self.direccion == 'salto':
+                    nueva_direccion = self.direccion_prev if self.direccion_prev else 'abajo'
+            elif self.velocidad_y < 0: # Está saltando (choca con techo)
+                self.rect.top = bloque.rect.bottom
+                self.velocidad_y = 0
+
+        # --- 5. LÓGICA DE ANIMACIÓN (Basada en tus fuentes) ---
+        if dx == 0 and dy == 0 and self.en_suelo:
+            self.indice_animacion = 0
         else:
-            self.en_suelo = False
-
-
-        # Si no hay movimiento, resetear animación a primer frame
-        if dx == 0 and dy == 0:
-            self.indice_animacion = 0
-            frame = self.animaciones[self.direccion][self.indice_animacion]
-            if self.direccion == 'izquierda':
-                frame = pygame.transform.flip(frame, True, False)
-            self.image = frame
-            return
-
-        # Actualiza la dirección si hay cambio
-        if nueva_direccion != self.direccion:
-            self.direccion = nueva_direccion
-            self.indice_animacion = 0
-
-        # Animación
-        self.contador_animacion += 1
-        if self.contador_animacion >= 5:  # Velocidad de animación
-            self.contador_animacion = 0
-            if not self.en_suelo and self.direccion != 'salto':
-                self.direccion = 'salto'  # Cambiar a animación de salto si está en el aire
+            if nueva_direccion != self.direccion:
+                self.direccion = nueva_direccion
                 self.indice_animacion = 0
 
-            self.indice_animacion = (self.indice_animacion + 1) % len(self.animaciones[self.direccion])
-            frame = self.animaciones[self.direccion][self.indice_animacion]
+            self.contador_animacion += 1
+            if self.contador_animacion >= 5:
+                self.contador_animacion = 0
+                self.indice_animacion = (self.indice_animacion + 1) % len(self.animaciones[self.direccion])
 
-            # Volteo horizontal para movimiento a la izquierda
-            if self.direccion in ['izquierda', 'salto'] and dx:
-                frame = pygame.transform.flip(frame, True, False)
-                print("por aquí también pasó")
-            elif self.direccion == 'salto' and self.direccion_prev in ['derecha', 'abajo']:
-                frame = pygame.transform.flip(frame, False, False)
-                print("aquí si llegó")
-            elif self.direccion == 'salto' and self.direccion_prev in ['izquierda', 'abajo']:
-                frame = pygame.transform.flip(frame, True, False)
-                self.direccion_prev = "izquierda"
-                print(self.direccion)
-                print(self.direccion_prev)
-            #self.direccion = "izquierda"
-            self.image = frame
+        # Seleccionar frame y aplicar volteo (flip)
+        frame = self.animaciones[self.direccion][self.indice_animacion]
+        if self.direccion == 'izquierda' or (self.direccion == 'salto' and self.direccion_prev == 'izquierda'):
+            frame = pygame.transform.flip(frame, True, False)
+        
+        self.image = frame
 
-        # Guardar dirección previa para salto
-        if self.en_suelo and self.direccion == 'abajo': # si la direccion del cat es "abajo" significa que saltó previamente
-            #self.direccion_prev = "izquierda"
-            #self.direccion = self.direccion_prev
-            #print(f"ahora esta quieto en posicion {self.direccion_prev}")
-            if self.direccion_prev != None: # si la direccion_prev es distinta a None significa que se guardó una dirección previa al salto
-                self.direccion = self.direccion_prev
-            print(f"ahora esta quieto en posicion {self.direccion}")
-
-        # Mover el sprite
-        self.rect.x += dx
-        self.rect.y += dy
-
+    
     def obtener_frame(self, fila, columna, ancho=64, alto=64):
         """Obtiene un frame del sprite sheet dada una fila y columna"""
         x = columna * ancho
