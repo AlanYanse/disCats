@@ -93,7 +93,7 @@ class Cat(pygame.sprite.Sprite):
                 self.velocidad_y = 0
 
         # --- 5. LÓGICA DE ANIMACIÓN (Basada en tus fuentes) ---
-        if dx == 0 and dy == 0 and self.en_suelo:
+        if dx == 0 and self.en_suelo:
             self.indice_animacion = 0
         else:
             if nueva_direccion != self.direccion:
