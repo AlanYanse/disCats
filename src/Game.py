@@ -8,6 +8,7 @@ from funciones import *
 from Tile import *
 
 from Cat import *
+from Arandano import *
 
 class Game:
 
@@ -38,6 +39,7 @@ class Game:
             "all_sprites": pygame.sprite.Group(),
             "catsito": pygame.sprite.Group(),
             "escenario": pygame.sprite.Group(),
+            "arandanos": pygame.sprite.Group(),   # ← NUEVO
             "textos": pygame.sprite.Group()
         }
 
@@ -55,6 +57,19 @@ class Game:
 
         teclas = pygame.key.get_pressed()
         self.listas_sprites["all_sprites"].update(teclas)
+
+        # --- COLISIÓN CON ARÁNDANOS ---
+        if hasattr(self, "gato"):
+            arandanos_colision = pygame.sprite.spritecollide(
+                self.gato,
+                self.listas_sprites["arandanos"],
+                True   # ← True los elimina automáticamente
+            )
+
+            if arandanos_colision:
+                self.puntos += 10 * len(arandanos_colision)
+                print("Puntos actuales:", self.puntos)  # Para debuguear
+                print("Arándanos recogidos:", len(arandanos_colision))
 
         # --- SCROLL ---
         if hasattr(self, "gato"):
@@ -166,34 +181,46 @@ class Game:
 
 
     def instanciar_objetos(self):
+
         if self.vidas <= 0:
             self.ir_gameover()
             return
 
-        # Recorremos la matriz del nivel (8 filas x 18 columnas)
+        # Recorremos la matriz del nivel
         for y in range(FILAS):
             for x in range(COLUMNAS):
+
                 tile_index = y * COLUMNAS + x
                 tile_id = nivel_1_1[tile_index]
-                
-                # Verificamos que el tile tenga un gráfico asignado
-                if tile_id in self.num_tile and self.num_tile[tile_id] is not None:
-                    
-                    # --- SOLUCIÓN AL ERROR DE TUPLA ---
-                    # Extraemos solo la imagen (índice 0) de la tupla (imagen, rect)
-                    imagen_solo = self.num_tile[tile_id][0]
-                    
-                    # Creamos el objeto Tile con su posición real en el mundo
-                    bloque = Tile(x * 64, y * 64, imagen_solo)
-                    
-                    # Si es el tile 10 (piso), lo añadimos al grupo de colisiones
+
+                # Si el tile no tiene gráfico asignado, lo ignoramos
+                if tile_id not in self.num_tile or self.num_tile[tile_id] is None:
+                    continue
+
+                imagen_solo = self.num_tile[tile_id][0]
+                pos_x = x * TILE_SIZE
+                pos_y = y * TILE_SIZE
+
+                # --- ARÁNDANO ---
+                if tile_id == 40:
+                    arandano = Arandano(pos_x, pos_y, imagen_solo)
+                    self.listas_sprites["arandanos"].add(arandano)
+                    self.listas_sprites["all_sprites"].add(arandano)
+
+                # --- RESTO DE TILES ---
+                else:
+                    bloque = Tile(pos_x, pos_y, imagen_solo)
+
+                    # Si es sólido lo añadimos al grupo de colisión
                     if tile_id in TILES_SOLIDOS:
                         self.listas_sprites["escenario"].add(bloque)
-                    
-                    # Lo añadimos a all_sprites para que se dibuje
+
                     self.listas_sprites["all_sprites"].add(bloque)
 
-        # Instanciamos al gato un poco más arriba para que caiga al suelo
+        # Instanciamos al gato
         self.gato = Cat(self, 64, 100)
         self.listas_sprites["all_sprites"].add(self.gato)
         self.listas_sprites["catsito"].add(self.gato)
+
+        # DEBUG opcional
+        print("Arándanos creados:", len(self.listas_sprites["arandanos"]))
