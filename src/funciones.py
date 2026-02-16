@@ -17,6 +17,7 @@ def get_diccionario_tiles(game):
             33: game.obtener_grafico("nube4.png"),
             40: game.obtener_grafico("arandano1.png"),
             50: game.obtener_grafico("carbon.png"),
+            60: game.obtener_grafico("cereza.png"),
         }
     
     return dict_tiles

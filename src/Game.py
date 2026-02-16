@@ -10,6 +10,7 @@ from Tile import *
 from Cat import *
 from Arandano import *
 from Carbon import *
+from Cereza import *
 
 class Game:
 
@@ -20,7 +21,7 @@ class Game:
         self.program_runnig = True
 
         self.puntos = 0
-        self.vidas = 3
+        self.vidas = VIDAS_MAXIMAS
         self.nivel = 1
 
         self.estado_juego = {
@@ -42,6 +43,7 @@ class Game:
             "escenario": pygame.sprite.Group(),
             "arandanos": pygame.sprite.Group(),   # ← NUEVO
             "carbones": pygame.sprite.Group(),
+            "cerezas": pygame.sprite.Group(),
             "textos": pygame.sprite.Group()
         }
 
@@ -76,13 +78,22 @@ class Game:
                 print("Puntos actuales:", self.puntos)  # Para debuguear
                 print("Arándanos recogidos:", len(arandanos_colision))
 
-        # --- COLISIÓN CON CARBONES ---
+        # --- COLISIÓN CON CEREZAS ---
         if hasattr(self, "gato"):
-            impactos = pygame.sprite.spritecollide(
+
+            cerezas_colision = pygame.sprite.spritecollide(
                 self.gato,
-                self.listas_sprites["carbones"],
+                self.listas_sprites["cerezas"],
                 True
             )
+
+            if cerezas_colision:
+                if self.vidas < VIDAS_MAXIMAS:
+                    self.vidas += 1
+                    print("VIDAS:", self.vidas)
+
+        # --- COLISIÓN CON CARBONES ---
+        if hasattr(self, "gato"):
 
             impactos = []
 
@@ -252,6 +263,11 @@ class Game:
                     arandano = Arandano(pos_x, pos_y, imagen_solo)
                     self.listas_sprites["arandanos"].add(arandano)
                     self.listas_sprites["all_sprites"].add(arandano)
+                # --- CEREZA ---
+                elif tile_id == 60:
+                    cereza = Cereza(pos_x, pos_y, imagen_solo)
+                    self.listas_sprites["cerezas"].add(cereza)
+                    self.listas_sprites["all_sprites"].add(cereza)
 
                 # --- RESTO DE TILES ---
                 else:
