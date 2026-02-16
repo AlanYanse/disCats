@@ -84,12 +84,18 @@ class Game:
                 True
             )
 
+            impactos = []
+
+            for carbon in self.listas_sprites["carbones"]:
+                if self.gato.rect.colliderect(carbon.hitbox):
+                    impactos.append(carbon)
+
+            for carbon in impactos:
+                carbon.kill()
+
             if impactos:
                 self.vidas -= 1
                 print("VIDAS:", self.vidas)
-
-                if self.vidas <= 0:
-                    print("GAME OVER")
 
         # --- SCROLL ---
         if hasattr(self, "gato"):
