@@ -39,13 +39,12 @@ class Cat(pygame.sprite.Sprite):
         nueva_direccion = self.direccion
 
         # --- 1. ENTRADA DE TECLADO ---
-        if self.en_suelo:
-            if teclas[pygame.K_LEFT]:
-                dx = -self.velocidad
-                nueva_direccion = 'izquierda'
-            elif teclas[pygame.K_RIGHT]:
-                dx = self.velocidad
-                nueva_direccion = 'derecha'
+        if teclas[pygame.K_LEFT]:
+            dx = -self.velocidad
+            nueva_direccion = 'izquierda'
+        elif teclas[pygame.K_RIGHT]:
+            dx = self.velocidad
+            nueva_direccion = 'derecha'
 
         # Salto
         if teclas[pygame.K_SPACE] and self.en_suelo:
