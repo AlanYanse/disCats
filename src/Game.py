@@ -9,6 +9,7 @@ from Tile import *
 
 from Cat import *
 from Arandano import *
+from Carbon import *
 
 class Game:
 
@@ -40,11 +41,15 @@ class Game:
             "catsito": pygame.sprite.Group(),
             "escenario": pygame.sprite.Group(),
             "arandanos": pygame.sprite.Group(),   # ← NUEVO
+            "carbones": pygame.sprite.Group(),
             "textos": pygame.sprite.Group()
         }
 
         self.fuente = pygame.font.SysFont("verdana", 48)
         self.txt_enter = self.fuente.render("Pulsar enter para continuar", True, (0,0,0))
+
+        self.spawn_carbon_event = pygame.USEREVENT + 1
+        pygame.time.set_timer(self.spawn_carbon_event, FRECUENCIA_CARBON_MS)
 
         self.num_tile = get_diccionario_tiles(self)
 
@@ -70,6 +75,21 @@ class Game:
                 self.puntos += 10 * len(arandanos_colision)
                 print("Puntos actuales:", self.puntos)  # Para debuguear
                 print("Arándanos recogidos:", len(arandanos_colision))
+
+        # --- COLISIÓN CON CARBONES ---
+        if hasattr(self, "gato"):
+            impactos = pygame.sprite.spritecollide(
+                self.gato,
+                self.listas_sprites["carbones"],
+                True
+            )
+
+            if impactos:
+                self.vidas -= 1
+                print("VIDAS:", self.vidas)
+
+                if self.vidas <= 0:
+                    print("GAME OVER")
 
         # --- SCROLL ---
         if hasattr(self, "gato"):
@@ -127,13 +147,16 @@ class Game:
                 if event.key == pygame.K_RETURN and self.estado_juego["menu_presentacion"]:
                     #pygame.mixer.music.stop() para en un futuro agregar musica
                     self.resetear_estados_juego()
-                    self.estado_juego["en juego"] = True
+                    self.estado_juego["en_juego"] = True
                     if self.vidas <= 0:
                         self.vidas = 3
                         self.puntos = 0
                         self.nivel = 1
                     # Comienza el juego presionando enter
                     self.new_game()
+            elif event.type == self.spawn_carbon_event:
+                if self.estado_juego["en_juego"]:
+                    self.spawn_carbon()
 
 
 
@@ -149,7 +172,7 @@ class Game:
 
     def obtener_grafico(self, nombre_archivo):
         #img = pygame.image.load(f"assets/{nombre_archivo}").convert()
-        img = pygame.image.load(f"assets/{nombre_archivo}").convert()
+        img = pygame.image.load(f"assets/{nombre_archivo}").convert_alpha()
         escala_x = 64
         escala_y = 64
         image = pygame.transform.scale(img, (escala_x,escala_y)) # Para escalar los tiles
@@ -178,6 +201,23 @@ class Game:
         self.instanciar_objetos()
 
 
+    def spawn_carbon(self):
+
+        if not hasattr(self, "gato"):
+            return
+
+        imagen_solo = self.num_tile[50][0]
+
+        # Borde derecho de la pantalla visible
+        x = self.scroll_x + ANCHO
+        y = self.gato.rect.y
+
+        carbon = Carbon(self, x, y, imagen_solo)
+
+        self.listas_sprites["carbones"].add(carbon)
+        self.listas_sprites["all_sprites"].add(carbon)
+
+        print("Carbon creado en:", x, y)  # DEBUG
 
 
     def instanciar_objetos(self):
