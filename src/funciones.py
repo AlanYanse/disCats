@@ -15,6 +15,7 @@ def get_diccionario_tiles(game):
             31: game.obtener_grafico("nube2.png"),
             32: game.obtener_grafico("nube3.png"),
             33: game.obtener_grafico("nube4.png"),
+            40: game.obtener_grafico("arandano1.png"),
         }
     
     return dict_tiles
@@ -43,6 +44,8 @@ def draw_tilemap_sin_scroll(game):
                 case 22:
                     game.screen.blit(game.num_tile[tile][0], (x * 64, y * 64))
                 case 23:
+                    game.screen.blit(game.num_tile[tile][0], (x * 64, y * 64))
+                case 40:
                     game.screen.blit(game.num_tile[tile][0], (x * 64, y * 64))
 
 
