@@ -17,6 +17,10 @@ class Game:
     def __init__(self):
 
         pygame.init()
+        pygame.mixer.init() # Para la música
+
+        self.musica_nivel_1 = f"assets/Music/{MUSICA_NIVEL_1}"
+        self.volumen_nivel_1 = VOLUMEN_NIVEL_1
 
         self.program_runnig = True
 
@@ -169,6 +173,10 @@ class Game:
                         self.vidas = 3
                         self.puntos = 0
                         self.nivel = 1
+                    # 🔊 Iniciar música del nivel 1
+                    pygame.mixer.music.load(self.musica_nivel_1)
+                    pygame.mixer.music.set_volume(self.volumen_nivel_1)
+                    pygame.mixer.music.play(-1)  # -1 = loop infinito
                     # Comienza el juego presionando enter
                     self.new_game()
             elif event.type == self.spawn_carbon_event:
