@@ -19,6 +19,9 @@ class Game:
         pygame.init()
         pygame.mixer.init() # Para la música
 
+        self.musica_menu = f"assets/Music/{MUSICA_MENU}"
+        self.volumen_menu = VOLUMEN_MENU
+
         self.musica_nivel_1 = f"assets/Music/{MUSICA_NIVEL_1}"
         self.volumen_nivel_1 = VOLUMEN_NIVEL_1
 
@@ -39,6 +42,23 @@ class Game:
 
         self.screen = pygame.display.set_mode((ANCHO, ALTO))
         self.reloj = pygame.time.Clock()
+
+        # --- IMÁGENES MENÚ ---
+        self.img_titulo = pygame.image.load("assets/Menu/label-discats.png").convert_alpha()
+        self.img_play = pygame.image.load("assets/Menu/label-play.png").convert_alpha()
+        self.img_salir = pygame.image.load("assets/Menu/label-salir.png").convert_alpha()
+
+        # Rectángulos (para colisión)
+        self.rect_titulo = self.img_titulo.get_rect(center=(ANCHO//2, 120))
+        self.rect_play = self.img_play.get_rect(center=(ANCHO//2, 300))
+        self.rect_salir = self.img_salir.get_rect(center=(ANCHO//2, 420))
+
+        # Índice de selección
+        self.opcion_seleccionada = 0  # 0 = Play, 1 = Salir
+
+        pygame.mixer.music.load(self.musica_menu)
+        pygame.mixer.music.set_volume(self.volumen_menu)
+        pygame.mixer.music.play(-1)  # loop infinito
 
         # Iniciar las listas de sprites
         self.listas_sprites = {
@@ -65,6 +85,10 @@ class Game:
 
 
     def update(self):
+
+        # NO actualizar nada si estamos en el menú
+        if not self.estado_juego["en_juego"]:
+            return
 
         teclas = pygame.key.get_pressed()
         self.listas_sprites["all_sprites"].update(teclas)
@@ -130,57 +154,101 @@ class Game:
 
     def draw(self):
 
+        # ----- MENÚ -----
+        if self.estado_juego["menu_presentacion"]:
+            self.draw_menu_presentacion()
+            return
+
+        # ----- JUEGO -----
         self.screen.fill(BLANCO)
 
         for sprite in self.listas_sprites["all_sprites"]:
+            self.screen.blit(
+                sprite.image,
+                (sprite.rect.x - self.scroll_x, sprite.rect.y)
+            )
 
-            # Si es un Tile → aplicar scroll
-            if isinstance(sprite, Tile):
-                self.screen.blit(
-                    sprite.image,
-                    (sprite.rect.x - self.scroll_x, sprite.rect.y)
-                )
 
-            # Si es el gato → también aplicar scroll
-            else:
-                self.screen.blit(
-                    sprite.image,
-                    (sprite.rect.x - self.scroll_x, sprite.rect.y)
-                )
+    def iniciar_juego(self):
 
-        if self.estado_juego["menu_presentacion"]:
-            self.screen.blit(self.txt_enter, (50,100))
+        self.resetear_estados_juego()
+        self.estado_juego["en_juego"] = True
 
+        pygame.mixer.music.stop()
+
+        pygame.mixer.music.load(self.musica_nivel_1)
+        pygame.mixer.music.set_volume(self.volumen_nivel_1)
+        pygame.mixer.music.play(-1)
+
+        if self.vidas <= 0:
+            self.vidas = 7
+            self.puntos = 0
+            self.nivel = 1
+
+        self.new_game()
 
 
 
     def check_event(self):
+
         for event in pygame.event.get():
+
+            # ---- SALIR GLOBAL ----
             if event.type == pygame.QUIT:
-                self.program_runnig = False
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.KEYDOWN:
+
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    self.program_runnig = False
                     pygame.quit()
                     sys.exit()
-                if event.key == pygame.K_RETURN and self.estado_juego["menu_presentacion"]:
-                    #pygame.mixer.music.stop() para en un futuro agregar musica
-                    self.resetear_estados_juego()
-                    self.estado_juego["en_juego"] = True
-                    if self.vidas <= 0:
-                        self.vidas = 3
-                        self.puntos = 0
-                        self.nivel = 1
-                    # 🔊 Iniciar música del nivel 1
-                    pygame.mixer.music.load(self.musica_nivel_1)
-                    pygame.mixer.music.set_volume(self.volumen_nivel_1)
-                    pygame.mixer.music.play(-1)  # -1 = loop infinito
-                    # Comienza el juego presionando enter
-                    self.new_game()
-            elif event.type == self.spawn_carbon_event:
-                if self.estado_juego["en_juego"]:
+
+            # ======================================================
+            # ===================== MENÚ ============================
+            # ======================================================
+
+            if self.estado_juego["menu_presentacion"]:
+
+                # -------- TECLADO --------
+                if event.type == pygame.KEYDOWN:
+
+                    if event.key == pygame.K_DOWN:
+                        self.opcion_seleccionada = (self.opcion_seleccionada + 1) % 2
+
+                    if event.key == pygame.K_UP:
+                        self.opcion_seleccionada = (self.opcion_seleccionada - 1) % 2
+
+                    if event.key == pygame.K_RETURN:
+                        if self.opcion_seleccionada == 0:
+                            self.iniciar_juego()
+                        else:
+                            pygame.quit()
+                            sys.exit()
+
+                # -------- MOUSE --------
+                mouse_pos = pygame.mouse.get_pos()
+
+                if self.rect_play.collidepoint(mouse_pos):
+                    self.opcion_seleccionada = 0
+
+                if self.rect_salir.collidepoint(mouse_pos):
+                    self.opcion_seleccionada = 1
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        if self.opcion_seleccionada == 0:
+                            self.iniciar_juego()
+                        else:
+                            pygame.quit()
+                            sys.exit()
+
+            # ======================================================
+            # ===================== JUEGO ===========================
+            # ======================================================
+
+            elif self.estado_juego["en_juego"]:
+
+                if event.type == self.spawn_carbon_event:
                     self.spawn_carbon()
 
 
@@ -217,6 +285,23 @@ class Game:
     def resetear_estados_juego(self):
         self.estado_juego = {clave: False for clave in self.estado_juego}
 
+
+    def draw_menu_presentacion(self):
+
+        self.screen.fill((240, 240, 240))
+
+        # Título
+        self.screen.blit(self.img_titulo, self.rect_titulo)
+
+        # Resaltar opción seleccionada
+        if self.opcion_seleccionada == 0:
+            pygame.draw.rect(self.screen, (0,0,0), self.rect_play.inflate(20,10), 3)
+        else:
+            pygame.draw.rect(self.screen, (0,0,0), self.rect_salir.inflate(20,10), 3)
+
+        # Botones
+        self.screen.blit(self.img_play, self.rect_play)
+        self.screen.blit(self.img_salir, self.rect_salir)
 
 
 
