@@ -9,6 +9,7 @@ FILAS = 8
 COLUMNAS_TOTAL_NIVEL = 18
 COLUMNAS = 18 * COLUMNAS_TOTAL_NIVEL
 
+
 # APARTADO MUSICAL
 MUSICA_MENU = "crayon_amazing_wasa_presentation1.wav"
 VOLUMEN_MENU = 0.3
@@ -32,3 +33,13 @@ TILE_SIZE = 64
 # CARBONES
 VELOCIDAD_CARBON = 4
 FRECUENCIA_CARBON_MS = 3500   # en milisegundos
+
+# CHECKPOINTS (coordenadas en píxeles)
+CHECKPOINTS = [
+    (64, 100),      # inicio nivel
+    (1500, 100),    # ejemplo checkpoint 1
+    (3000, 100)     # ejemplo checkpoint 2
+]
+
+# Altura máxima de caída (si supera esto, muere)
+LIMITE_CAIDA = FILAS * TILE_SIZE

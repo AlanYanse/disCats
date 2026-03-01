@@ -25,6 +25,8 @@ class Game:
         self.musica_nivel_1 = f"assets/Music/{MUSICA_NIVEL_1}"
         self.volumen_nivel_1 = VOLUMEN_NIVEL_1
 
+        self.checkpoint_actual = 0
+
         self.program_runnig = True
 
         self.puntos = 0
@@ -93,36 +95,31 @@ class Game:
         teclas = pygame.key.get_pressed()
         self.listas_sprites["all_sprites"].update(teclas)
 
-        # --- COLISIÓN CON ARÁNDANOS ---
         if hasattr(self, "gato"):
+
+            # --- COLISIÓN CON ARÁNDANOS ---
             arandanos_colision = pygame.sprite.spritecollide(
                 self.gato,
                 self.listas_sprites["arandanos"],
-                True   # ← True los elimina automáticamente
+                True
             )
 
             if arandanos_colision:
                 self.puntos += 10 * len(arandanos_colision)
-                print("Puntos actuales:", self.puntos)  # Para debuguear
-                print("Arándanos recogidos:", len(arandanos_colision))
+                print("Puntos actuales:", self.puntos)
 
-        # --- COLISIÓN CON CEREZAS ---
-        if hasattr(self, "gato"):
-
+            # --- COLISIÓN CON CEREZAS ---
             cerezas_colision = pygame.sprite.spritecollide(
                 self.gato,
                 self.listas_sprites["cerezas"],
                 True
             )
 
-            if cerezas_colision:
-                if self.vidas < VIDAS_MAXIMAS:
-                    self.vidas += 1
-                    print("VIDAS:", self.vidas)
+            if cerezas_colision and self.vidas < VIDAS_MAXIMAS:
+                self.vidas += 1
+                print("VIDAS:", self.vidas)
 
-        # --- COLISIÓN CON CARBONES ---
-        if hasattr(self, "gato"):
-
+            # --- COLISIÓN CON CARBONES ---
             impactos = []
 
             for carbon in self.listas_sprites["carbones"]:
@@ -136,18 +133,25 @@ class Game:
                 self.vidas -= 1
                 print("VIDAS:", self.vidas)
 
-        # --- SCROLL ---
-        if hasattr(self, "gato"):
-
+            # --- SCROLL ---
             self.scroll_x = self.gato.rect.centerx - ANCHO // 2
-
-            #max_scroll = COLUMNAS * 64 - ANCHO
             max_scroll = COLUMNAS * 64 - ANCHO
 
             if self.scroll_x < 0:
                 self.scroll_x = 0
             if self.scroll_x > max_scroll:
                 self.scroll_x = max_scroll
+
+            # --- ACTUALIZAR CHECKPOINT (optimizado) ---
+            for i in range(len(CHECKPOINTS)):
+                if self.gato.rect.x >= CHECKPOINTS[i][0]:
+                    self.checkpoint_actual = i
+                else:
+                    break
+
+            # --- MUERTE POR CAÍDA ---
+            if self.gato.rect.bottom > LIMITE_CAIDA:
+                self.respawnear_gato()
 
         self.reloj.tick(60)
 
@@ -328,6 +332,25 @@ class Game:
         self.listas_sprites["all_sprites"].add(carbon)
 
         print("Carbon creado en:", x, y)  # DEBUG
+
+    
+    def respawnear_gato(self):
+
+        self.vidas -= 1
+
+        if self.vidas <= 0:
+            self.ir_gameover()
+            return
+
+        x, y = CHECKPOINTS[self.checkpoint_actual]
+
+        self.gato.rect.topleft = (x, y)
+        self.gato.velocidad_y = 0
+        self.gato.en_suelo = False
+
+        self.scroll_x = x - ANCHO // 2
+        if self.scroll_x < 0:
+            self.scroll_x = 0
 
 
     def instanciar_objetos(self):
