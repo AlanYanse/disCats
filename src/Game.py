@@ -132,6 +132,7 @@ class Game:
             if impactos:
                 self.vidas -= 1
                 print("VIDAS:", self.vidas)
+                self.gato.recibir_danio()
 
             # --- SCROLL ---
             self.scroll_x = self.gato.rect.centerx - ANCHO // 2

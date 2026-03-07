@@ -9,6 +9,9 @@ class Cat(pygame.sprite.Sprite):
         self.direccion_prev = None
         self.indice_animacion = 0
         self.spritesheet = pygame.image.load("assets/sprite_sheet_bk.png").convert_alpha()
+
+        self.tiempo_danio = 0
+        self.duracion_danio = 10   # frames que dura el destello
         
 
         # Animaciones por dirección (fila en el sprite sheet)
@@ -106,10 +109,18 @@ class Cat(pygame.sprite.Sprite):
 
         # Seleccionar frame y aplicar volteo (flip)
         frame = self.animaciones[self.direccion][self.indice_animacion]
+
         if self.direccion == 'izquierda' or (self.direccion == 'salto' and self.direccion_prev == 'izquierda'):
             frame = pygame.transform.flip(frame, True, False)
-        
-        self.image = frame
+
+        self.image = frame.copy()   # ← copiar el frame
+
+        # Sistema de daño
+        if self.tiempo_danio > 0:
+            rojo = pygame.Surface(self.image.get_size(), pygame.SRCALPHA)
+            rojo.fill((255, 0, 0, 120))  # rojo semitransparente
+            self.image.blit(rojo, (0, 0))
+            self.tiempo_danio -= 1
 
     
     def obtener_frame(self, fila, columna, ancho=64, alto=64):
@@ -119,3 +130,7 @@ class Cat(pygame.sprite.Sprite):
         imagen = pygame.Surface((ancho, alto), pygame.SRCALPHA)
         imagen.blit(self.spritesheet, (0, 0), (x, y, ancho, alto))
         return imagen
+
+
+    def recibir_danio(self):
+        self.tiempo_danio = self.duracion_danio
