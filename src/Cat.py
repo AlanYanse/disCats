@@ -11,7 +11,7 @@ class Cat(pygame.sprite.Sprite):
         self.spritesheet = pygame.image.load("assets/sprite_sheet_bk.png").convert_alpha()
 
         self.tiempo_danio = 0
-        self.duracion_danio = 10   # frames que dura el destello
+        self.duracion_danio = 60   # frames que dura el destello
         self.invencible = False
 
         # Animaciones por dirección (fila en el sprite sheet)

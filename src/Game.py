@@ -32,6 +32,7 @@ class Game:
         self.puntos = 0
         self.vidas = VIDAS_MAXIMAS
         self.nivel = 1
+        
 
         self.estado_juego = {
 
@@ -70,7 +71,8 @@ class Game:
             "arandanos": pygame.sprite.Group(),   # ← NUEVO
             "carbones": pygame.sprite.Group(),
             "cerezas": pygame.sprite.Group(),
-            "textos": pygame.sprite.Group()
+            "textos": pygame.sprite.Group(),
+            "tiles_danio": pygame.sprite.Group(),
         }
 
         self.fuente = pygame.font.SysFont("verdana", 48)
@@ -133,6 +135,18 @@ class Game:
                 self.vidas -= 1
                 print("VIDAS:", self.vidas)
                 self.gato.recibir_danio()
+
+            # --- COLISIÓN CON AGUA ---
+            for tile in self.listas_sprites["tiles_danio"]:
+                if self.gato.rect.bottom == tile.rect.top and \
+                self.gato.rect.right > tile.rect.left and \
+                self.gato.rect.left < tile.rect.right:
+
+                    if not self.gato.invencible:
+                        self.vidas -= 1
+                        print("VIDAS:", self.vidas)
+                        self.gato.recibir_danio()
+                        break
 
             # --- SCROLL ---
             self.scroll_x = self.gato.rect.centerx - ANCHO // 2
@@ -388,7 +402,10 @@ class Game:
 
                 # --- RESTO DE TILES ---
                 else:
-                    bloque = Tile(pos_x, pos_y, imagen_solo)
+                    bloque = Tile(pos_x, pos_y, imagen_solo, tile_id)
+
+                    if tile_id in TILES_DANIO:
+                        self.listas_sprites["tiles_danio"].add(bloque)
 
                     # Si es sólido lo añadimos al grupo de colisión
                     if tile_id in TILES_SOLIDOS:
