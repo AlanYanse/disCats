@@ -129,7 +129,7 @@ class Game:
             for carbon in impactos:
                 carbon.kill()
 
-            if impactos:
+            if impactos and not self.gato.invencible:
                 self.vidas -= 1
                 print("VIDAS:", self.vidas)
                 self.gato.recibir_danio()

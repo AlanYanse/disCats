@@ -12,7 +12,7 @@ class Cat(pygame.sprite.Sprite):
 
         self.tiempo_danio = 0
         self.duracion_danio = 10   # frames que dura el destello
-        
+        self.invencible = False
 
         # Animaciones por dirección (fila en el sprite sheet)
         self.animaciones = {
@@ -121,6 +121,8 @@ class Cat(pygame.sprite.Sprite):
             rojo.fill((255, 0, 0, 120))  # rojo semitransparente
             self.image.blit(rojo, (0, 0))
             self.tiempo_danio -= 1
+        else:
+            self.invencible = False
 
     
     def obtener_frame(self, fila, columna, ancho=64, alto=64):
@@ -134,3 +136,4 @@ class Cat(pygame.sprite.Sprite):
 
     def recibir_danio(self):
         self.tiempo_danio = self.duracion_danio
+        self.invencible = True
