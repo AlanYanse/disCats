@@ -1,4 +1,5 @@
 
+
 import pygame
 import sys
 
@@ -32,15 +33,13 @@ class Game:
         self.puntos = 0
         self.vidas = VIDAS_MAXIMAS
         self.nivel = 1
-        
+
 
         self.estado_juego = {
-
             "menu_presentacion": True,
             "en_juego": False,
             "game_over": False,
             "nivel_superado": False
-
         }
 
         self.screen = pygame.display.set_mode((ANCHO, ALTO))
@@ -68,7 +67,7 @@ class Game:
             "all_sprites": pygame.sprite.Group(),
             "catsito": pygame.sprite.Group(),
             "escenario": pygame.sprite.Group(),
-            "arandanos": pygame.sprite.Group(),   # ← NUEVO
+            "arandanos": pygame.sprite.Group(),
             "carbones": pygame.sprite.Group(),
             "cerezas": pygame.sprite.Group(),
             "textos": pygame.sprite.Group(),
@@ -84,9 +83,6 @@ class Game:
         self.num_tile = get_diccionario_tiles(self)
 
         self.scroll_x = 0
-
-
-
 
     def update(self):
 
@@ -157,7 +153,7 @@ class Game:
             if self.scroll_x > max_scroll:
                 self.scroll_x = max_scroll
 
-            # --- ACTUALIZAR CHECKPOINT (optimizado) ---
+            # --- ACTUALIZAR CHECKPOINT ---
             for i in range(len(CHECKPOINTS)):
                 if self.gato.rect.x >= CHECKPOINTS[i][0]:
                     self.checkpoint_actual = i
@@ -170,7 +166,6 @@ class Game:
 
         self.reloj.tick(60)
 
-
     def draw(self):
 
         # ----- MENÚ -----
@@ -179,14 +174,30 @@ class Game:
             return
 
         # ----- JUEGO -----
-        self.screen.fill(BLANCO)
+        self.screen.fill(BLANCO)  # Se limpia una sola vez aquí
 
+        # 1. Dibujamos todos los sprites aplicando el desfase del gato
         for sprite in self.listas_sprites["all_sprites"]:
-            self.screen.blit(
-                sprite.image,
-                (sprite.rect.x - self.scroll_x, sprite.rect.y)
-            )
+            if hasattr(sprite, "margin_x") and hasattr(sprite, "margin_y"):
+                self.screen.blit(
+                    sprite.image,
+                    (sprite.rect.x - sprite.margin_x - self.scroll_x, sprite.rect.y - sprite.margin_y)
+                )
+            else:
+                self.screen.blit(
+                    sprite.image,
+                    (sprite.rect.x - self.scroll_x, sprite.rect.y)
+                )
 
+        # 2. Dibujamos el contorno del hitbox encima de todo (AL FINAL)
+        if hasattr(self, "gato"):
+            hitbox_gato_pantalla = pygame.Rect(
+                self.gato.rect.x - self.scroll_x,
+                self.gato.rect.y,
+                self.gato.rect.width,
+                self.gato.rect.height
+            )
+            pygame.draw.rect(self.screen, (255, 0, 0), hitbox_gato_pantalla, 2)
 
     def iniciar_juego(self):
 
@@ -206,8 +217,6 @@ class Game:
 
         self.new_game()
 
-
-
     def check_event(self):
 
         for event in pygame.event.get():
@@ -225,7 +234,6 @@ class Game:
             # ======================================================
             # ===================== MENÚ ============================
             # ======================================================
-
             if self.estado_juego["menu_presentacion"]:
 
                 # -------- TECLADO --------
@@ -264,14 +272,10 @@ class Game:
             # ======================================================
             # ===================== JUEGO ===========================
             # ======================================================
-
             elif self.estado_juego["en_juego"]:
 
                 if event.type == self.spawn_carbon_event:
                     self.spawn_carbon()
-
-
-
 
     def bucle_principal(self):
         while self.program_runnig:
@@ -280,33 +284,23 @@ class Game:
             self.draw()
             pygame.display.flip()
 
-
-
     def obtener_grafico(self, nombre_archivo):
-        #img = pygame.image.load(f"assets/{nombre_archivo}").convert()
         img = pygame.image.load(f"assets/{nombre_archivo}").convert_alpha()
         escala_x = 64
         escala_y = 64
-        image = pygame.transform.scale(img, (escala_x,escala_y)) # Para escalar los tiles
+        image = pygame.transform.scale(img, (escala_x,escala_y))
         image.set_colorkey(BLANCO)
-        rect = image.get_rect() # Hay que obtener el rectangulo para poder interactuar con los tiles
+        rect = image.get_rect()
         return (image, rect)
 
-
-
     def vaciar_listas(self):
-        #Vaciar todas las listas de all_sprites
         for grupo in self.listas_sprites.values():
             grupo.empty()
-
-
 
     def resetear_estados_juego(self):
         self.estado_juego = {clave: False for clave in self.estado_juego}
 
-
     def draw_menu_presentacion(self):
-
         self.screen.fill((240, 240, 240))
 
         # Título
@@ -322,22 +316,16 @@ class Game:
         self.screen.blit(self.img_play, self.rect_play)
         self.screen.blit(self.img_salir, self.rect_salir)
 
-
-
     def new_game(self):
-        #Prepara un nuevo nivel o en_juego
         self.vaciar_listas()
         self.instanciar_objetos()
 
-
     def spawn_carbon(self):
-
         if not hasattr(self, "gato"):
             return
 
         imagen_solo = self.num_tile[50][0]
 
-        # Borde derecho de la pantalla visible
         x = self.scroll_x + ANCHO
         y = self.gato.rect.y
 
@@ -346,11 +334,9 @@ class Game:
         self.listas_sprites["carbones"].add(carbon)
         self.listas_sprites["all_sprites"].add(carbon)
 
-        print("Carbon creado en:", x, y)  # DEBUG
+        print("Carbon creado en:", x, y)
 
-    
     def respawnear_gato(self):
-
         self.vidas -= 1
 
         if self.vidas <= 0:
@@ -359,7 +345,8 @@ class Game:
 
         x, y = CHECKPOINTS[self.checkpoint_actual]
 
-        self.gato.rect.topleft = (x, y)
+        # Al reaparecer sumamos el desfase de los márgenes correspondientes
+        self.gato.rect.topleft = (x + self.gato.margin_x, y + self.gato.margin_y)
         self.gato.velocidad_y = 0
         self.gato.en_suelo = False
 
@@ -367,21 +354,17 @@ class Game:
         if self.scroll_x < 0:
             self.scroll_x = 0
 
-
     def instanciar_objetos(self):
-
         if self.vidas <= 0:
             self.ir_gameover()
             return
 
-        # Recorremos la matriz del nivel
         for y in range(FILAS):
             for x in range(COLUMNAS):
 
                 tile_index = y * COLUMNAS + x
                 tile_id = nivel_1_1[tile_index]
 
-                # Si el tile no tiene gráfico asignado, lo ignoramos
                 if tile_id not in self.num_tile or self.num_tile[tile_id] is None:
                     continue
 
@@ -389,34 +372,28 @@ class Game:
                 pos_x = x * TILE_SIZE
                 pos_y = y * TILE_SIZE
 
-                # --- ARÁNDANO ---
                 if tile_id == 40:
                     arandano = Arandano(pos_x, pos_y, imagen_solo)
                     self.listas_sprites["arandanos"].add(arandano)
                     self.listas_sprites["all_sprites"].add(arandano)
-                # --- CEREZA ---
                 elif tile_id == 60:
                     cereza = Cereza(pos_x, pos_y, imagen_solo)
                     self.listas_sprites["cerezas"].add(cereza)
                     self.listas_sprites["all_sprites"].add(cereza)
-
-                # --- RESTO DE TILES ---
                 else:
                     bloque = Tile(pos_x, pos_y, imagen_solo, tile_id)
 
                     if tile_id in TILES_DANIO:
                         self.listas_sprites["tiles_danio"].add(bloque)
 
-                    # Si es sólido lo añadimos al grupo de colisión
                     if tile_id in TILES_SOLIDOS:
                         self.listas_sprites["escenario"].add(bloque)
 
                     self.listas_sprites["all_sprites"].add(bloque)
 
-        # Instanciamos al gato
+        # Instanciamos al gato (su constructor maneja automáticamente sus dimensiones reducidas)
         self.gato = Cat(self, 64, 100)
         self.listas_sprites["all_sprites"].add(self.gato)
         self.listas_sprites["catsito"].add(self.gato)
 
-        # DEBUG opcional
         print("Arándanos creados:", len(self.listas_sprites["arandanos"]))

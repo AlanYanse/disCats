@@ -1,3 +1,4 @@
+
 import pygame
 from config import *
 
@@ -24,8 +25,21 @@ class Cat(pygame.sprite.Sprite):
         }
 
         self.image = self.animaciones[self.direccion][self.indice_animacion]
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x, y)
+
+        # --- CONFIGURACIÓN DE HITBOX ASIMÉTRICO AUTOMÁTICO ---
+        self.ancho_hitbox = 36
+        self.alto_hitbox = 54   # 64 - 10 de margen superior
+        self.margin_y = 10
+
+        # Definimos los dos márgenes reales de tu sprite sheet
+        self.margin_mirando_derecha = 8
+        self.margin_mirando_izquierda = 20  # Al voltear el cuadro, el espacio de adelante pasa atrás (64 - 36 - 8)
+
+        # Empezamos con el margen por defecto (mirando abajo/derecha)
+        self.margin_x = self.margin_mirando_derecha
+
+        # Creamos el rect con el tamaño real del hitbox
+        self.rect = pygame.Rect(x + self.margin_x, y + self.margin_y, self.ancho_hitbox, self.alto_hitbox)
 
         # Variables de movimiento
         self.velocidad = VELOCIDAD_GATO
@@ -51,7 +65,7 @@ class Cat(pygame.sprite.Sprite):
 
         # Salto
         if teclas[pygame.K_SPACE] and self.en_suelo:
-            self.velocidad_y = self.velocidad_salto # -12
+            self.velocidad_y = self.velocidad_salto
             self.en_suelo = False
             self.direccion_prev = self.direccion
             self.direccion = 'salto'
@@ -71,6 +85,7 @@ class Cat(pygame.sprite.Sprite):
         ancho_mundo = COLUMNAS * 64
         if self.rect.right > ancho_mundo:
             self.rect.right = ancho_mundo
+
         lista_colisiones_x = pygame.sprite.spritecollide(self, self.game.listas_sprites["escenario"], False)
         for bloque in lista_colisiones_x:
             if dx > 0: # Choca moviéndose a la derecha
@@ -81,7 +96,7 @@ class Cat(pygame.sprite.Sprite):
         # --- 4. COLISIÓN VERTICAL (EJE Y) ---
         self.rect.y += dy
         self.en_suelo = False # Por defecto está en el aire
-        
+
         lista_colisiones_y = pygame.sprite.spritecollide(self, self.game.listas_sprites["escenario"], False)
         for bloque in lista_colisiones_y:
             if self.velocidad_y > 0: # Está cayendo
@@ -94,7 +109,7 @@ class Cat(pygame.sprite.Sprite):
                 self.rect.top = bloque.rect.bottom
                 self.velocidad_y = 0
 
-        # --- 5. LÓGICA DE ANIMACIÓN (Basada en tus fuentes) ---
+        # --- 5. LÓGICA DE ANIMACIÓN ---
         if dx == 0 and self.en_suelo:
             self.indice_animacion = 0
         else:
@@ -112,6 +127,11 @@ class Cat(pygame.sprite.Sprite):
 
         if self.direccion == 'izquierda' or (self.direccion == 'salto' and self.direccion_prev == 'izquierda'):
             frame = pygame.transform.flip(frame, True, False)
+            # ¡AQUÍ ESTÁ EL TRUCO! Si mira a la izquierda, cambiamos el margen a 20 para compensar el flip
+            self.margin_x = self.margin_mirando_izquierda
+        else:
+            # Si mira a la derecha, abajo o arriba, mantenemos el margen normal de 8
+            self.margin_x = self.margin_mirando_derecha
 
         self.image = frame.copy()   # ← copiar el frame
 
@@ -124,7 +144,6 @@ class Cat(pygame.sprite.Sprite):
         else:
             self.invencible = False
 
-    
     def obtener_frame(self, fila, columna, ancho=64, alto=64):
         """Obtiene un frame del sprite sheet dada una fila y columna"""
         x = columna * ancho
@@ -132,7 +151,6 @@ class Cat(pygame.sprite.Sprite):
         imagen = pygame.Surface((ancho, alto), pygame.SRCALPHA)
         imagen.blit(self.spritesheet, (0, 0), (x, y, ancho, alto))
         return imagen
-
 
     def recibir_danio(self):
         self.tiempo_danio = self.duracion_danio
